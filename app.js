@@ -9,11 +9,12 @@ $(document).ready( function() {
 	$('.inspiration-getter').submit(function(event){
 		$('.results').html('');
 		var answerers = $(this).find("input[name='answerers']").val();
+		console.log(answerers);
 		getTopAnswerers(answerers);
 	});
 });
 
-/// this function takes the question object returned by StackOverflow 
+// this function takes the question object returned by StackOverflow 
 // and creates new result to be appended to DOM
 var showQuestion = function(question) {
 	
@@ -63,8 +64,8 @@ var showAnswerer = function(answerer) {
 	reputation.text(answerer.user.reputation);
 	
 	// set answerer's post count
-	var postCount = result.find('.post_count');
-	postCount.text(answerer.post-count);
+	var postCount = result.find('.post-count');
+	postCount.text(answerer.post_count);
 	
 	// set the answerer's score
 	var score = result.find('.score');
@@ -120,26 +121,29 @@ var getUnanswered = function(tags) {
 	});
 };
 
+// takes a string of a single tag to be searched
 var getTopAnswerers = function(answerers) {
 	
-	var request = {tagged: answerers, site: 'stackoverflow',
-									  order: 'desc', 
-									  sort: 'creation'};
+	var request = {tag: answerers, site: 'stackoverflow', period: 'all_time'};
+	console.log(request.tag);
 	
 	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/tags" + answerers + " /top-answerers/all-time",
+		url: "http://api.stackexchange.com/2.2/tags/" + request.tag + "/top-answerers/all_time",
 		data: request,
 		dataType: "jsonp",
 		type: "GET",
-		}
+		})
 		.done(function(result){
-		var searchResults = showSearchResults(request.tagged, result.items.length);
-		
-		$('.search-results').html(searchResults);
-		
-		$.each(result.items, function(i, item) {
-			var question = showAnswerer(item);
-			$('.results').append(question);
+			console.log(result.items);
+			var searchResults = showSearchResults(request.tag, result.items.length);
+			
+			// show number of items for tag at top
+			$('.search-results').html(searchResults);
+			
+			// append each item to our cloned template
+			$.each(result.items, function(i, item) {
+				var question = showAnswerer(item);
+				$('.results').append(question);
 		});
 	})
 	.fail(function(jqXHR, error, errorThrown){
