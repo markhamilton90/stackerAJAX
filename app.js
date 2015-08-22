@@ -6,6 +6,12 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+	$('.inspiration-getter').submit(function(event){
+		$('.results').html('');
+		var answerers = $(this).find("input[name='answerers']").val();
+		console.log(answerers);
+		getTopAnswerers(answerers);
+	});
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -40,6 +46,33 @@ var showQuestion = function(question) {
 
 	return result;
 };
+
+// this function takes the answerer object returned by StackOverflow 
+// and creates new result to be appended to DOM
+var showAnswerer = function(answerer) {
+	
+	// clone the answerer template code
+	var result = $('.templates .answerer').clone();
+	
+	// set answerer properties
+	var answererElem = result.find('.username a');
+	answererElem.attr('href', answerer.user.link);
+	answererElem.text(answerer.user.display_name);
+	
+	// set answerer's reputation
+	var reputation = result.find('.reputation');
+	reputation.text(answerer.user.reputation);
+	
+	// set answerer's post count
+	var postCount = result.find('.post-count');
+	postCount.text(answerer.post_count);
+	
+	// set the answerer's score
+	var score = result.find('.score');
+	score.text(answerer.score);
+	
+	return result;
+}
 
 
 // this function takes the results object from StackOverflow
@@ -80,6 +113,37 @@ var getUnanswered = function(tags) {
 		$.each(result.items, function(i, item) {
 			var question = showQuestion(item);
 			$('.results').append(question);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+};
+
+// takes a string of a single tag to be searched
+var getTopAnswerers = function(answerers) {
+	
+	var request = {tag: answerers, site: 'stackoverflow', period: 'all_time'};
+	console.log(request.tag);
+	
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/" + request.tag + "/top-answerers/all_time",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+		})
+		.done(function(result){
+			console.log(result.items);
+			var searchResults = showSearchResults(request.tag, result.items.length);
+			
+			// show number of items for tag at top
+			$('.search-results').html(searchResults);
+			
+			// append each item to our cloned template
+			$.each(result.items, function(i, item) {
+				var question = showAnswerer(item);
+				$('.results').append(question);
 		});
 	})
 	.fail(function(jqXHR, error, errorThrown){
