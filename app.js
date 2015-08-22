@@ -13,7 +13,7 @@ $(document).ready( function() {
 	});
 });
 
-// this function takes the question object returned by StackOverflow 
+/// this function takes the question object returned by StackOverflow 
 // and creates new result to be appended to DOM
 var showQuestion = function(question) {
 	
